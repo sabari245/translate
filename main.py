@@ -1,63 +1,43 @@
-import re
-import os
+from functions import *
 from docx import Document
-
-def read_file(path: str) -> str:
-    res = ""
-    with open(path, "r", encoding="utf8") as fp:
-        res = res.join(fp.readlines())
-
-    return res
-
-
-def find_chinese(string: str) -> list[str]:
-    return set(re.findall(r"[\u4e00-\u9fff]+", string))
-
-
-# def translate(chinese_words):
-#     res = []
-#     for word in chinese_words:
-#         res.append(GoogleTranslator(source='zh-CN', target='en').translate(word))
-# return res
-
-
-def get_files() -> list[str]:
-    directory_path = "./src"
-    extensions = [".tsx", ".ts", ".jsx", ".js", ".md", ".mdx", ".sh"]
-    result = []
-    for dirpath, _, filenames in os.walk(directory_path):
-        for filename in filenames:
-            for extension in extensions:
-                if filename.endswith(extension):
-                    result.append(os.path.join(dirpath, filename))
-    return result
 
 
 if __name__ == "__main__":
-    # chinese = find_chinese(read_file("./src/card.tsx"))
-
+    # variable to hold chinese words and their translations
     chinese_words = set()
+    dictionary = {}
 
     for each in get_files():
         chinese = find_chinese(read_file(each))
         chinese_words.update(chinese)
-
-    # print(list(chinese_words))
-
     chinese_words = list(chinese_words)
-    d = Document()
 
-    # with open("res.txt", "w", encoding="utf8") as f:
-    #     i = 0
-    #     for each in chinese_words:
-    #         f.write(each + "\n")
-    #         i += 1
-    #         print(f"\rcompleted:{100 - int(len(chinese_words) / i)}     ", end="")
-    
+    chinese_doc = Document()
+
     for each in chinese_words:
-        d.add_paragraph(each)
+        chinese_doc.add_paragraph(each)
 
-    d.save("res.docx")
+    chinese_doc.save("res.docx")
 
-    # print(chinese)
-    # print(translate(chinese))
+    input(
+        "the output file is saved as res.docx open the google translate and paste it here as out.docx.\nonce completed press any key to continue..."
+    )
+
+    english_doc = Document("./out.docx")
+
+    if len(chinese_doc.paragraphs) == len(english_doc.paragraphs):
+        print("Invalid document, the length of translations doesn't match")
+
+    for i, j in zip(chinese_doc.paragraphs, english_doc.paragraphs):
+        dictionary[i] = j
+
+    for file in get_files():
+        content = read_file(file)
+        words = list(find_chinese(content))
+        words.sort(key=lambda x: len(x), reverse=True)
+
+        for word in words:
+            content = content.replace(word, dictionary[word])
+
+        # write_file(file.replace(r".\src\amis", r".\src\res"), content)
+        write_file(file, content)
