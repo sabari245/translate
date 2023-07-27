@@ -1,6 +1,6 @@
 import re
 import os
-
+from docx import Document
 
 def read_file(path: str) -> str:
     res = ""
@@ -45,13 +45,19 @@ if __name__ == "__main__":
     # print(list(chinese_words))
 
     chinese_words = list(chinese_words)
+    d = Document()
 
-    with open("res.txt", "w", encoding="utf8") as f:
-        i = 0
-        for each in chinese_words:
-            f.write(each + "\n")
-            i += 1
-            print(f"\rcompleted:{100 - int(len(chinese_words) / i)}", end="")
+    # with open("res.txt", "w", encoding="utf8") as f:
+    #     i = 0
+    #     for each in chinese_words:
+    #         f.write(each + "\n")
+    #         i += 1
+    #         print(f"\rcompleted:{100 - int(len(chinese_words) / i)}     ", end="")
+    
+    for each in chinese_words:
+        d.add_paragraph(each)
+
+    d.save("res.docx")
 
     # print(chinese)
     # print(translate(chinese))
